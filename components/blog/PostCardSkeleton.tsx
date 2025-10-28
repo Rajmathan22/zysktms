@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import { cssInterop } from 'nativewind';
 
 const PostCardSkeleton: React.FC = () => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const AView = Animated.View;
+  cssInterop(AView, { className: 'style' });
 
   useEffect(() => {
     const shimmer = () => {
@@ -30,103 +33,33 @@ const PostCardSkeleton: React.FC = () => {
   };
 
   return (
-    <View style={styles.postCard}>
+    <View className="bg-white rounded-xl mb-[15px] overflow-hidden shadow-md border border-gray-200">
       {/* Image Skeleton */}
-      <Animated.View style={[styles.imageSkeleton, shimmerStyle]} />
+      <AView className="w-full h-[180px] bg-gray-200" style={shimmerStyle} />
       
-      <View style={styles.postContent}>
+      <View className="p-[15px]">
         {/* Title Skeleton */}
-        <Animated.View style={[styles.titleSkeleton, shimmerStyle]} />
+        <AView className="h-6 bg-gray-200 rounded mb-3 w-4/5" style={shimmerStyle} />
         
         {/* Body Skeleton - 3 lines */}
-        <Animated.View style={[styles.bodySkeleton, shimmerStyle]} />
-        <Animated.View style={[styles.bodySkeleton, styles.bodySkeletonShort, shimmerStyle]} />
-        <Animated.View style={[styles.bodySkeleton, styles.bodySkeletonMedium, shimmerStyle]} />
+        <AView className="h-4 bg-gray-200 rounded mb-2 w-full" style={shimmerStyle} />
+        <AView className="h-4 bg-gray-200 rounded mb-2 w-3/5" style={shimmerStyle} />
+        <AView className="h-4 bg-gray-200 rounded mb-2 w-[85%]" style={shimmerStyle} />
         
-        <View style={styles.postDetails}>
+        <View className="flex-row justify-between items-center mt-[15px] border-t border-gray-100 pt-[10px]">
           {/* Tags Skeleton */}
-          <Animated.View style={[styles.tagsSkeleton, shimmerStyle]} />
+          <AView className="h-[14px] bg-gray-200 rounded w-[100px]" style={shimmerStyle} />
           
           {/* Reactions Skeleton */}
-          <Animated.View style={[styles.reactionsSkeleton, shimmerStyle]} />
+          <AView className="h-[14px] bg-gray-200 rounded w-[80px]" style={shimmerStyle} />
         </View>
         
         {/* Button Skeleton */}
-        <Animated.View style={[styles.buttonSkeleton, shimmerStyle]} />
+        <AView className="h-11 bg-gray-200 rounded-lg mt-[15px]" style={shimmerStyle} />
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  postCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 15,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  imageSkeleton: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#e0e0e0',
-  },
-  postContent: {
-    padding: 15,
-  },
-  titleSkeleton: {
-    height: 24,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-    marginBottom: 12,
-    width: '80%',
-  },
-  bodySkeleton: {
-    height: 16,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-    marginBottom: 8,
-    width: '100%',
-  },
-  bodySkeletonShort: {
-    width: '60%',
-  },
-  bodySkeletonMedium: {
-    width: '85%',
-  },
-  postDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    paddingTop: 10,
-  },
-  tagsSkeleton: {
-    height: 14,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-    width: 100,
-  },
-  reactionsSkeleton: {
-    height: 14,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 4,
-    width: 80,
-  },
-  buttonSkeleton: {
-    height: 44,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 8,
-    marginTop: 15,
-  },
-});
-
 export default PostCardSkeleton;
+

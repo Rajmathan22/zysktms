@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Share, Text, TouchableOpacity, View } from 'react-native';
 
 import Button from '../common/Button';
 
@@ -30,6 +31,17 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
     router.push({ pathname: '/blogs/[id]', params: { id: String(item.id) } });
   };
 
+  const handleShare = async () => {
+    try {
+      const url = Linking.createURL(`/blogs/${String(item.id)}`);
+      const title = item.title ?? 'Check out this post';
+      const message = `${title}\n${url}`;
+      await Share.share({ message, title });
+    } catch (error) {
+      console.warn('Share failed', error);
+    }
+  };
+
   const handleDelete = () => {
     if (onDelete) {
       onDelete(item.id);
@@ -39,14 +51,22 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
   return (
     <View className="bg-white rounded-xl mb-4 overflow-hidden shadow-lg border border-gray-200">
       {}
-      {onDelete && (
+      <View className="absolute top-2.5 right-2.5 z-10 flex-row gap-2">
         <TouchableOpacity 
-          className="absolute top-2.5 right-2.5 z-10 bg-white/90 rounded-full w-7 h-7 justify-center items-center shadow-sm"
-          onPress={handleDelete}
+          className="bg-white/90 rounded-full w-7 h-7 justify-center items-center shadow-sm mr-2"
+          onPress={handleShare}
         >
-          <Ionicons name="trash-outline" size={18} color="#ff4444" />
+          <Ionicons name="share-social-outline" size={18} color="#1f2937" />
         </TouchableOpacity>
-      )}
+        {onDelete && (
+          <TouchableOpacity 
+            className="bg-white/90 rounded-full w-7 h-7 justify-center items-center shadow-sm"
+            onPress={handleDelete}
+          >
+            <Ionicons name="trash-outline" size={18} color="#ff4444" />
+          </TouchableOpacity>
+        )}
+      </View>
       
       {item.imageUrl && (
         <Image 
