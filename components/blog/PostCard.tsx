@@ -27,7 +27,7 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
   console.log('PostCard item:', { id: item.id, title: item.title, imageUrl: item.imageUrl });
 
   const handleViewFullPost = () => {
-    router.push(`/blog-detail?id=${item.id}`);
+    router.push({ pathname: '/blogs/[id]', params: { id: String(item.id) } });
   };
 
   const handleDelete = () => {

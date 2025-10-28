@@ -41,7 +41,7 @@ const ExamsScreen = () => {
 
   const handlePrimary = (item: ExamItem) => {
     // Always navigate; assessment screen handles resume/completion checks
-    router.push({ pathname: '/assessment_screen', params: { id: item.id, name: item.title } });
+    router.push({ pathname: '/assessment', params: { id: item.id, name: item.title } });
   };
 
   return (

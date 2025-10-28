@@ -15,8 +15,8 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { fetchAssessmentQuestions } from "../api/api";
-import { DatabaseManager, ExamAnswer } from "../services/database";
+import { fetchAssessmentQuestions } from "../../api/api";
+import { DatabaseManager, ExamAnswer } from "../../services/database";
 
 interface Option {
   option_id: number;
@@ -247,9 +247,8 @@ export default function AssessmentScreen() {
     if (!databaseManager) return;
     setLoading(true);
     try {
-      // Ensure DB and per-exam table are ready before any prompts or fetch
       try {
-        await databaseManager.getAllAnswers(); // triggers initialization/table ensure inside safely
+        await databaseManager.getAllAnswers(); 
       } catch {}
 
       const exists = await databaseManager.checkDatabaseExists();
@@ -433,20 +432,8 @@ export default function AssessmentScreen() {
         // IMMEDIATELY replace navigation to remove exam screen from stack
         router.replace('/feedback');
         
-        setTimeout(() => {
-          setShowSubmissionAnimation(false);
-        }, 3000);
       } else {
-        // Manual finish - go to feedback screen first, then dashboard
-        setShowSubmissionAnimation(true);
-        
-        // For manual completion, go to feedback screen
-        // Note: Feedback screen should use router.replace('/') to go to dashboard with clean stack
-        router.replace('/feedback');
-        
-        setTimeout(() => {
-          setShowSubmissionAnimation(false);
-        }, 3000);
+        updateCurrentQuestionIndex(0);
       }
     } catch (error) {
       console.error("Error handling exam completion:", error);

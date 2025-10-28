@@ -2,9 +2,9 @@ import { PostDetail } from '@/types/home';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
-import { fetchPostById } from '../api/api';
-import ScreenContainer from '../components/layout/ScreenContainer';
-import { Colors } from '../constants/Colors';
+import { fetchPostById } from '../../api/api';
+import ScreenContainer from '../../components/layout/ScreenContainer';
+import { Colors } from '../../constants/Colors';
 
 
 const BlogDetailScreen: React.FC = () => {

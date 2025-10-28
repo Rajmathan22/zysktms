@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Image, Animated, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthContext } from '../providers/AuthProvider';
+import { useAuthContext } from '../../providers/AuthProvider';
 
 const SplashScreen = () => {
   const { user, loading } = useAuthContext();
@@ -52,7 +52,7 @@ const SplashScreen = () => {
         ]}
       >
         <Image
-          source={require('../assets/images/zysk-mobile-logo.png')}
+          source={require('../../assets/images/zysk-mobile-logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
