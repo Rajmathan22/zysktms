@@ -1,10 +1,11 @@
+import { useAuthContext } from '@/providers/AuthProvider';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import AddIcon from '../common/AddIcon'; // Our new component
 import Logo from '../common/Logo';
-import NotificationBell from '../common/NotificationBell'; // Your new component
+import NotificationBell from '../common/NotificationBell';
 
 interface AppBarProps {
   onNotificationPress?: () => void;
@@ -14,6 +15,9 @@ interface AppBarProps {
   onAddPress?: () => void;
   showAddIcon?: boolean;
 }
+
+  
+  
 
 const AppBar: React.FC<AppBarProps> = ({
   onNotificationPress,
@@ -30,6 +34,8 @@ const AppBar: React.FC<AppBarProps> = ({
     if (onNotificationPress) onNotificationPress();
   };
 
+    const { role } = useAuthContext();
+
   return (
     <View style={styles.container}>
       <View style={[styles.content, { paddingTop: insets.top }]}>
@@ -41,7 +47,7 @@ const AppBar: React.FC<AppBarProps> = ({
         
         <View style={styles.iconsContainer}>
           {/* Use the new AddIcon directly */}
-          {showAddIcon && <AddIcon onPress={onAddPress} size={28} />}
+          {showAddIcon && role==='admin' && <AddIcon onPress={onAddPress} size={28} />}
           
           {/* Use your new NotificationBell directly */}
           {showNotifications && (

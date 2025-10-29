@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import AppBar from './AppBar';
@@ -24,6 +25,7 @@ const ScreenContainer: React.FC<ScreenContainerProps> = ({
   appBarProps = {},
 }) => {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const drawerWidth = useMemo(() => Math.floor(Dimensions.get('window').width * 0.86), []);
 
@@ -38,7 +40,7 @@ const ScreenContainer: React.FC<ScreenContainerProps> = ({
     // Then open the overlay drawer
     openDrawer();
   }, [onNotificationPress, openDrawer]);
-  
+
   return (
     <View style={styles.container}>
       {showAppBar && (
@@ -46,6 +48,7 @@ const ScreenContainer: React.FC<ScreenContainerProps> = ({
           onNotificationPress={handleNotificationFromAppBar}
           hasNotifications={hasNotifications}
           {...appBarProps}
+          onAddPress={() => router.push('/blogs/create_post')}
         />
       )}
       <View style={[styles.content, { paddingBottom: insets.bottom }]}>

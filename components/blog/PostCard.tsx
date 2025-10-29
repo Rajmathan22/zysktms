@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Share, Text, TouchableOpacity, View } from 'react-native';
 
+import { useAuthContext } from '../../providers/AuthProvider';
+
 import Button from '../common/Button';
 
 
@@ -48,6 +50,9 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
     }
   };
 
+  const { role } = useAuthContext();
+
+ 
   return (
     <View className="bg-white rounded-xl mb-4 overflow-hidden shadow-lg border border-gray-200">
       {}
@@ -58,7 +63,7 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
         >
           <Ionicons name="share-social-outline" size={18} color="#1f2937" />
         </TouchableOpacity>
-        {onDelete && (
+        {onDelete && role === 'admin' &&(
           <TouchableOpacity 
             className="bg-white/90 rounded-full w-7 h-7 justify-center items-center shadow-sm"
             onPress={handleDelete}

@@ -32,3 +32,22 @@ export const fetchAssessmentQuestions = async (): Promise<AssessmentResponse> =>
     throw error;
   }
 };
+
+export type CreatePostPayload = {
+  title: string;
+  body: string;
+  category?: string;
+  tags?: string[];
+};
+
+export const createBlogPost = async (payload: CreatePostPayload) => {
+  try {
+    const response = await axiosInstance.post(
+      "https://jsonplaceholder.typicode.com/posts",
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
