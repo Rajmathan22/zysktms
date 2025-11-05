@@ -1,6 +1,6 @@
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import AppBar from './AppBar';

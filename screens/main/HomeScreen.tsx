@@ -1,23 +1,31 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
-  StyleSheet,
+  Modal, // <-- 1. Import Modal
+  NativeScrollEvent,
   Text,
-  View
+  TouchableOpacity,
+  View,
+  ViewabilityConfig,
+  ViewToken
 } from 'react-native';
 
 // Components & Providers
+import FullScreenVideoPlayer from '../../components/blog/FullScreenVideoPlayer'; // <-- 2. Import FullScreenVideoPlayer
 import PostCard from '../../components/blog/PostCard';
 import PostCardSkeleton from '../../components/blog/PostCardSkeleton';
 import ScreenContainer from '../../components/layout/ScreenContainer';
-import { Colors } from '../../constants/Colors';
 import { useAuthContext } from '../../providers/AuthProvider';
 
 // API
 import { fetchData } from '../../api/api';
 
-// Type Definitions
+// --- This is your new media URL ---
+const VIDEO_URL = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+
+// 1. UPDATED INTERFACE: Added videoUrl
 interface Post {
   id: number;
   title: string;
@@ -26,6 +34,7 @@ interface Post {
   reactions: { likes: number; dislikes: number };
   views: number;
   imageUrl?: string;
+  videoUrl?: string; // <-- This field is added
 }
 
 interface ApiResponse {
@@ -35,8 +44,9 @@ interface ApiResponse {
   limit: number;
 }
 
-// Define how many posts to show per page
 const POSTS_PER_PAGE = 10;
+const SCROLL_THRESHOLD = 100;
+const JITTER_BUFFER = 15; // Pixels
 
 const HomeScreen = () => {
   const { user, loading: authLoading } = useAuthContext();
@@ -49,6 +59,25 @@ const HomeScreen = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const isLoadingRef = useRef(false);
+  const [visibleVideoId, setVisibleVideoId] = useState<number | null>(null);
+
+  const listRef = useRef<FlatList<Post> | null>(null);
+  const [isFabVisible, setIsFabVisible] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // --- NEW STATE FOR MODAL ---
+  const [modalVideoSource, setModalVideoSource] = useState<string | null>(null);
+
+  // --- NEW FUNCTIONS TO CONTROL MODAL ---
+  const handleOpenVideoModal = useCallback((source: string) => {
+    setModalVideoSource(source);
+    // Optional: Pause the visible card video when modal opens
+    setVisibleVideoId(null); 
+  }, []);
+
+  const handleCloseVideoModal = useCallback(() => {
+    setModalVideoSource(null);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -56,12 +85,48 @@ const HomeScreen = () => {
     }
   }, [user, authLoading, router]);
 
-  const mapWithImages = useCallback((items: Post[]) => {
-    return items.map((post) => ({
-      ...post,
-      imageUrl: `https://picsum.photos/id/${post.id % 100}/400/200`,
-    }));
+  const handle_videoplayer = () => {
+    router.push('/video_player');
+  };
+
+  const mapMediaToPosts = useCallback((items: Post[]) => {
+    return items.map((post) => {
+      if (post.id % 5 === 0) { 
+        return {
+          ...post,
+          videoUrl: VIDEO_URL,
+          imageUrl: undefined, 
+        };
+      }
+      
+      return {
+        ...post,
+        imageUrl: `https://picsum.photos/id/${post.id % 100}/400/200`, // Assign image
+        videoUrl: undefined, // Ensure video is undefined
+      };
+    });
   }, []);
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
+      const firstVisibleItem = viewableItems[0];
+      
+      if (firstVisibleItem && firstVisibleItem.isViewable && firstVisibleItem.item) {
+        const visiblePost = firstVisibleItem.item as Post;
+        if (visiblePost.videoUrl) {
+          setVisibleVideoId(visiblePost.id);
+        } else {
+          setVisibleVideoId(null);
+        }
+      } else {
+        setVisibleVideoId(null);
+      }
+    }
+  ).current;
+
+  const viewabilityConfig = useRef<ViewabilityConfig>({
+    itemVisiblePercentThreshold: 50, 
+  }).current;
 
   const loadInitial = useCallback(async () => {
     setPostsLoading(true);
@@ -69,10 +134,10 @@ const HomeScreen = () => {
     isLoadingRef.current = true;
     try {
       const response = await fetchData(POSTS_PER_PAGE, 0);
-      const items = mapWithImages(response.posts);
+      const items = mapMediaToPosts(response.posts); 
       setPosts(items);
       setTotal(response.total);
-      setSkip(response.limit);
+      setSkip(items.length);
       setHasMore(response.limit < response.total);
     } catch (err) {
       setError('Failed to fetch posts. Please try again later.');
@@ -80,38 +145,39 @@ const HomeScreen = () => {
       setPostsLoading(false);
       isLoadingRef.current = false;
     }
-  }, [mapWithImages]);
+  }, [mapMediaToPosts]);
 
   const loadMore = useCallback(async () => {
-    if (isLoadingRef.current || isFetchingMore || !hasMore) return;
-    
-    // Small delay to ensure smooth scroll experience
-    setTimeout(() => {
-      setIsFetchingMore(true);
-    }, 100);
-    
+    if (isLoadingRef.current || !hasMore) return;
+
     setError(null);
+    setIsFetchingMore(true);
     isLoadingRef.current = true;
+    
     try {
       const response = await fetchData(POSTS_PER_PAGE, skip);
-      const items = mapWithImages(response.posts);
-      // Append with de-duplication by id
+      const items = mapMediaToPosts(response.posts);
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       setPosts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
-        const merged = [...prev, ...items.filter((p) => !existingIds.has(p.id))];
+        const newItems = items.filter((p) => !existingIds.has(p.id));
+        const merged = [...prev, ...newItems];
+        setSkip(merged.length);
+        setHasMore(merged.length < response.total);
+        setTotal(response.total);
         return merged;
       });
-      const newSkip = skip + response.limit;
-      setSkip(newSkip);
-      setTotal(response.total);
-      setHasMore(newSkip < response.total);
     } catch (err) {
+      console.error('Error loading more posts:', err);
       setError('Failed to fetch more posts. Pull to retry.');
     } finally {
       setIsFetchingMore(false);
       isLoadingRef.current = false;
     }
-  }, [hasMore, isFetchingMore, mapWithImages, skip]);
+  }, [hasMore, skip, mapMediaToPosts]);
+
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -119,13 +185,42 @@ const HomeScreen = () => {
     }
   }, [authLoading, user, loadInitial]);
 
+  const scrollToTop = useCallback(() => {
+    listRef.current?.scrollToOffset({ animated: true, offset: 0 });
+    setTimeout(() => {
+      setPostsLoading(true);
+      loadInitial();
+    }, 400); 
+  }, [loadInitial]);
+
+  const handleScroll = useCallback(
+    (event: { nativeEvent: NativeScrollEvent }) => {
+      const currentScrollY = event.nativeEvent.contentOffset.y;
+      const scrollDifference = currentScrollY - lastScrollY;
+
+      if (currentScrollY < SCROLL_THRESHOLD) {
+        setIsFabVisible(false);
+      }
+      else if (scrollDifference < -JITTER_BUFFER) {
+        setIsFabVisible(true);
+      }
+      else if (scrollDifference > JITTER_BUFFER) {
+        setIsFabVisible(false);
+      }
+
+      if (Math.abs(scrollDifference) > JITTER_BUFFER) {
+        setLastScrollY(currentScrollY);
+      }
+    },
+    [lastScrollY]
+  );
+
   const handleDeletePost = useCallback((postId: number) => {
     console.log('Deleting post with ID:', postId);
     setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     setTotal((prevTotal) => prevTotal - 1);
   }, []);
 
-  const handleLogout = async () => { /* ... (no changes) ... */ };
   const handleNotificationPress = () => {
     console.log('Notification pressed from Home');
   };
@@ -133,107 +228,111 @@ const HomeScreen = () => {
   const ListFooter = useMemo(() => {
     if (isFetchingMore) {
       return (
-        <View style={styles.skeletonFooter}>
-          <PostCardSkeleton />
-          <PostCardSkeleton />
-          <View style={styles.extraSpacer} />
+        <View className="space-y-4 pb-8">
+          {Array(3).fill(0).map((_, index) => (
+            <PostCardSkeleton key={`skeleton-${index}`} />
+          ))}
         </View>
       );
     }
-    return <View style={styles.footerSpacer} />;
-  }, [isFetchingMore]);
+    return hasMore ? (
+      <View className="py-4 items-center">
+        <Text className="text-gray-500">Swipe up to load more</Text>
+      </View>
+    ) : (
+      <View className="py-6 items-center">
+        <Text className="text-gray-500">No more posts to show</Text>
+      </View>
+    );
+  }, [isFetchingMore, hasMore]);
 
   return (
-    <ScreenContainer onNotificationPress={handleNotificationPress} hasNotifications={false}>
+    <ScreenContainer
+      onNotificationPress={handleNotificationPress}
+      hasNotifications={false}
+      appBarProps={{}}
+    >
       <FlatList
+        ref={listRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         data={postsLoading ? Array(5).fill(null) : posts}
-        keyExtractor={(item, index) => postsLoading ? `skeleton-${index}` : item.id.toString()}
-        renderItem={({ item }) => postsLoading ? <PostCardSkeleton /> : <PostCard item={item} onDelete={handleDeletePost} />}
-        contentContainerStyle={styles.listContent}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.1}
-        removeClippedSubviews={false}
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
+        keyExtractor={(item, index) =>
+          item?.id ? item.id.toString() : `skeleton-${index}`
+        }
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        renderItem={({ item, index }) => {
+          if (!item) {
+            return <PostCardSkeleton key={`skeleton-${index}`} />;
+          }
+
+          const isVisible = item.videoUrl ? item.id === visibleVideoId : false;
+          
+          return (
+            <PostCard 
+              item={item} 
+              onDelete={handleDeletePost} 
+              isVisible={isVisible} 
+              onVideoPress={handleOpenVideoModal} 
+            />
+          );
         }}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={5}
+        windowSize={10}
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         ListHeaderComponent={
           <>
             {error && !postsLoading && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
+              <View className="my-2">
+                <Text className="text-red-500 text-base text-center my-2">
+                  {error}
+                </Text>
               </View>
             )}
           </>
         }
         ListFooterComponent={ListFooter}
+        refreshing={postsLoading}
+        onRefresh={loadInitial}
       />
+
+      {isFabVisible && (
+        <TouchableOpacity
+          className="
+            absolute bottom-6 right-5 h-14 w-14 
+            items-center justify-center rounded-full 
+            bg-blue-500 
+            shadow-lg android:elevation-8 
+            z-10
+          "
+          onPress={scrollToTop}
+          activeOpacity={0.7}
+        >
+          <Feather name="arrow-up" size={24} color="white" />
+        </TouchableOpacity>
+      )}
+
+      
+      <Modal
+        visible={!!modalVideoSource}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={handleCloseVideoModal}
+      >
+        <FullScreenVideoPlayer
+          videoSource={modalVideoSource || ''}
+          onClose={handleCloseVideoModal}
+        />
+      </Modal>
+
     </ScreenContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  // ... (keep all your existing styles for header, loading, error, etc.)
-  loadingContainer: { /* ... */ },
-  errorContainer: { /* ... */ },
-  header: { /* ... */ },
-  title: { },
-  subtitle: { /* ... */ },
-  listContent: {
-    marginTop:20,
-    paddingHorizontal: 15,
-    paddingBottom: 20,
-  },
-  footerSpacer: {
-    height: 12,
-  },
-  skeletonFooter: {
-    paddingBottom: 50,
-  },
-  extraSpacer: {
-    height: 30,
-  },
-  logoutContainer: {
-    marginTop: 20,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  
-  // --- NEW STYLES for Pagination ---
-  paginationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  paginationButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  disabledButton: {
-    backgroundColor: '#ccc', // A grey color for disabled state
-    opacity: 0.7,
-  },
-  paginationButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  paginationText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 16,
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-});
 
 export default HomeScreen;

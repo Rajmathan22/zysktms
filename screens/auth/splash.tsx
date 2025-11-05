@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Image, Animated, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { cssInterop } from 'nativewind';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Image, View } from 'react-native';
 import { useAuthContext } from '../../providers/AuthProvider';
 
 const SplashScreen = () => {
@@ -10,7 +11,6 @@ const SplashScreen = () => {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    // Start animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -27,33 +27,30 @@ const SplashScreen = () => {
 
   useEffect(() => {
     if (!loading) {
-      // Wait for animations to complete before navigating
       const timer = setTimeout(() => {
         if (user) {
           router.replace('/(tabs)/home');
         } else {
           router.replace('/(auth)/login');
         }
-      }, 2500); // 2.5 seconds to allow animations to complete
+      }, 1000); 
 
       return () => clearTimeout(timer);
     }
   }, [user, loading, router]);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white items-center justify-center">
       <Animated.View
-        style={[
-          styles.logoContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          },
-        ]}
+        className="items-center justify-center"
+        style={{
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        }}
       >
         <Image
           source={require('../../assets/images/zysk-mobile-logo.png')}
-          style={styles.logo}
+          className="w-[200] h-[200]"
           resizeMode="contain"
         />
       </Animated.View>
@@ -61,21 +58,6 @@ const SplashScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 200,
-    height: 200,
-  },
-});
+cssInterop(Animated.View, { className: 'style' });
 
 export default SplashScreen;

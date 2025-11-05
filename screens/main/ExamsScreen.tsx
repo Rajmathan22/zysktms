@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import ExamCard from '../../components/common/ExamCard';
 import ScreenContainer from '../../components/layout/ScreenContainer';
@@ -12,25 +13,20 @@ const ExamsScreen = () => {
   const handleNotificationPress = () => {
     console.log('Notification pressed from exams');
   };
-
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<ExamItem[]>([]);
   const [filter, setFilter] = useState<'all' | ExamStatus>('all');
 
-  useEffect(() => {
-    const run = async () => {
-      setLoading(true);
-      const data = await fetchExams();
-      setItems(data.items);
-      setLoading(false);
-    };
-    run();
-  }, []);
+  const {data: items = [], isLoading, error, isError} = useQuery({
+    queryKey:['exams'],
+    queryFn:()=>fetchExams(),
+    select: (response) => response.items,
+    enabled: true,
+  })
 
   const filtered = useMemo(() => {
     if (filter === 'all') return items;
     return items.filter((i) => i.status === filter);
   }, [items, filter]);
+
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -40,7 +36,6 @@ const ExamsScreen = () => {
   }, [items]);
 
   const handlePrimary = (item: ExamItem) => {
-    // Always navigate; assessment screen handles resume/completion checks
     router.push({ pathname: '/assessment', params: { id: item.id, name: item.title } });
   };
 
@@ -92,7 +87,7 @@ const ExamsScreen = () => {
                 <Text style={styles.statLabel}>Upcoming</Text>
               </View>
             </View>
-            {loading && (
+            {isLoading && (
               <View style={styles.loadingWrap}>
                 <ActivityIndicator color={Colors.primary} />
               </View>

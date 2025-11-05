@@ -60,7 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               console.log('SUCCESS: User document found:', userData);
               setRole(userData.role || null);
             } else {
-              // --- DEBUG LOG 3 ---
               console.log(
                 'INFO: No user document found at path:',
                 userDocRef.path
@@ -82,7 +81,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(null);
         setRole(null);
         setLoading(false);
-        // (No listener is created, and the old one was already cleaned up)
       }
     });
 

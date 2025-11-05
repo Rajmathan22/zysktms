@@ -1,4 +1,5 @@
 import { NotificationProvider } from "@/providers/NotificationsProvider";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
@@ -7,6 +8,7 @@ import React, { useEffect } from "react";
 import { Text, TextInput } from "react-native";
 import { AuthProvider } from "../providers/AuthProvider";
 
+const queryClient = new QueryClient();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
@@ -56,10 +58,13 @@ export default function RootLayout() {
   }
 
   return (
+    
+    <QueryClientProvider client={queryClient}>
     <NotificationProvider>
     <AuthProvider>
       <Stack screenOptions={{ headerShown: false }} />
     </AuthProvider>
     </NotificationProvider>
+    </QueryClientProvider>
   );
 }

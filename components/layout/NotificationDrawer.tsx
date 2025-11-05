@@ -16,11 +16,11 @@ interface NotificationDrawerProps {
   visible: boolean;
   onClose: () => void;
   notifications?: NotificationItem[];
-  width?: number; // optional fixed width; defaults to 86% of screen width
+  width?: number; 
 }
 
 const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ visible, onClose, notifications = [], width }) => {
-  const translateX = useRef(new Animated.Value(1)).current; // 1 -> hidden (off-screen), 0 -> visible
+  const translateX = useRef(new Animated.Value(1)).current; 
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   const fallbackWidth = Math.floor(Dimensions.get('window').width * 0.86);

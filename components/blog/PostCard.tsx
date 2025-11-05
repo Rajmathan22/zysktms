@@ -1,34 +1,33 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, Share, Text, TouchableOpacity, View } from 'react-native';
-
+import { Image, Share, Text, View } from 'react-native';
 import { useAuthContext } from '../../providers/AuthProvider';
 
 import Button from '../common/Button';
-
+import CardVideoPlayer from './CardVideoPlayer';
 
 interface Post {
-  id: number;
-  title: string;
-  body: string;
-  tags: string[];
-  reactions: { likes: number; dislikes: number };
-  views: number;
-  imageUrl?: string;
+  id: number;
+  title: string;
+  body: string;
+  tags: string[];
+  reactions: { likes: number; dislikes: number };
+  views: number;
+  imageUrl?: string;
+  videoUrl?: string; 
 }
 
 interface PostCardProps {
-  item: Post;
-  onDelete?: (id: number) => void;
+  item: Post;
+  onDelete?: (id: number) => void;
+  isVisible: boolean; 
+  onVideoPress: (source: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
+const PostCard: React.FC<PostCardProps> = ({ item, onDelete, isVisible, onVideoPress }) => {
   const router = useRouter();
   
-  console.log('PostCard item:', { id: item.id, title: item.title, imageUrl: item.imageUrl });
-
   const handleViewFullPost = () => {
     router.push({ pathname: '/blogs/[id]', params: { id: String(item.id) } });
   };
@@ -52,28 +51,18 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
 
   const { role } = useAuthContext();
 
- 
   return (
-    <View className="bg-white rounded-xl mb-4 overflow-hidden shadow-lg border border-gray-200">
-      {}
+    <View className="bg-white rounded-xl mb-4 mr-4 ml-4 mt-2 overflow-hidden shadow-lg border border-gray-200">
       <View className="absolute top-2.5 right-2.5 z-10 flex-row gap-2">
-        <TouchableOpacity 
-          className="bg-white/90 rounded-full w-7 h-7 justify-center items-center shadow-sm mr-2"
-          onPress={handleShare}
-        >
-          <Ionicons name="share-social-outline" size={18} color="#1f2937" />
-        </TouchableOpacity>
-        {onDelete && role === 'admin' &&(
-          <TouchableOpacity 
-            className="bg-white/90 rounded-full w-7 h-7 justify-center items-center shadow-sm"
-            onPress={handleDelete}
-          >
-            <Ionicons name="trash-outline" size={18} color="#ff4444" />
-          </TouchableOpacity>
-        )}
       </View>
       
-      {item.imageUrl && (
+      {item.videoUrl ? (
+        <CardVideoPlayer 
+          videoSource={item.videoUrl!} 
+          isVisible={isVisible} 
+          onPress={() => onVideoPress(item.videoUrl!)} 
+        />
+      ) : item.imageUrl ? (
         <Image 
           source={{ uri: item.imageUrl }} 
           className="w-full"
@@ -81,7 +70,8 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
           onError={(error) => console.log('Image load error:', error.nativeEvent.error)}
           onLoad={() => console.log('Image loaded successfully:', item.imageUrl)}
         />
-      )}
+      ) : null}
+      
       <View className="p-4">
         <Text className="text-xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'Nunito-Bold' }}>
           {item.title}
@@ -107,7 +97,6 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete }) => {
           </Text>
         </View>
 
-        {/* View Blog Button */}
         <View className="mt-4">
             <Button title="View Full Blog" onPress={handleViewFullPost} />
         </View>

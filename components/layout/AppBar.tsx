@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
-import AddIcon from '../common/AddIcon'; // Our new component
+import AddIcon from '../common/AddIcon';
 import Logo from '../common/Logo';
 import NotificationBell from '../common/NotificationBell';
 
@@ -16,9 +16,6 @@ interface AppBarProps {
   showAddIcon?: boolean;
 }
 
-  
-  
-
 const AppBar: React.FC<AppBarProps> = ({
   onNotificationPress,
   hasNotifications = true,
@@ -29,7 +26,6 @@ const AppBar: React.FC<AppBarProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
 
-  // Handler for notification press can be simplified if not needed
   const handleNotificationPress = () => {
     if (onNotificationPress) onNotificationPress();
   };
@@ -46,10 +42,8 @@ const AppBar: React.FC<AppBarProps> = ({
         )}
         
         <View style={styles.iconsContainer}>
-          {/* Use the new AddIcon directly */}
           {showAddIcon && role==='admin' && <AddIcon onPress={onAddPress} size={28} />}
           
-          {/* Use your new NotificationBell directly */}
           {showNotifications && (
             <NotificationBell 
               onPress={handleNotificationPress}
@@ -90,7 +84,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  // The 'iconWrapper' style is no longer needed and can be deleted.
 });
 
 export default AppBar;

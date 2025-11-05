@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { fetchAssessmentQuestions } from "../../api/api";
 import { DatabaseManager, ExamAnswer } from "../../services/database";

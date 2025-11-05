@@ -3,7 +3,7 @@
     "name": "zysktms",
     "slug": "zysktms",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "zysktms",
     "userInterfaceStyle": "automatic",
@@ -35,7 +35,10 @@
               "pathPrefix": "/blogs"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "edgeToEdgeEnabled": true,
@@ -43,10 +46,17 @@
     },
     "web": {
       "output": "static",
-       "bundler": "metro",
+      "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -78,7 +88,8 @@
             ]
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
