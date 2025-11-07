@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
-  Modal, // <-- 1. Import Modal
+  Modal,
   NativeScrollEvent,
   Text,
   TouchableOpacity,
@@ -12,20 +12,22 @@ import {
   ViewToken
 } from 'react-native';
 
+import InstaStory from 'react-native-insta-story';
+
 // Components & Providers
-import FullScreenVideoPlayer from '../../components/blog/FullScreenVideoPlayer'; // <-- 2. Import FullScreenVideoPlayer
+import FullScreenVideoPlayer from '../../components/blog/FullScreenVideoPlayer';
 import PostCard from '../../components/blog/PostCard';
 import PostCardSkeleton from '../../components/blog/PostCardSkeleton';
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import { useAuthContext } from '../../providers/AuthProvider';
 
 // API
+import { Colors } from '@/constants/Colors';
 import { fetchData } from '../../api/api';
 
 // --- This is your new media URL ---
 const VIDEO_URL = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
-// 1. UPDATED INTERFACE: Added videoUrl
 interface Post {
   id: number;
   title: string;
@@ -34,14 +36,7 @@ interface Post {
   reactions: { likes: number; dislikes: number };
   views: number;
   imageUrl?: string;
-  videoUrl?: string; // <-- This field is added
-}
-
-interface ApiResponse {
-  posts: Post[];
-  total: number;
-  skip: number;
-  limit: number;
+  videoUrl?: string;
 }
 
 const POSTS_PER_PAGE = 10;
@@ -65,14 +60,11 @@ const HomeScreen = () => {
   const [isFabVisible, setIsFabVisible] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // --- NEW STATE FOR MODAL ---
   const [modalVideoSource, setModalVideoSource] = useState<string | null>(null);
 
-  // --- NEW FUNCTIONS TO CONTROL MODAL ---
   const handleOpenVideoModal = useCallback((source: string) => {
     setModalVideoSource(source);
-    // Optional: Pause the visible card video when modal opens
-    setVisibleVideoId(null); 
+    setVisibleVideoId(null);
   }, []);
 
   const handleCloseVideoModal = useCallback(() => {
@@ -85,24 +77,19 @@ const HomeScreen = () => {
     }
   }, [user, authLoading, router]);
 
-  const handle_videoplayer = () => {
-    router.push('/video_player');
-  };
-
   const mapMediaToPosts = useCallback((items: Post[]) => {
     return items.map((post) => {
-      if (post.id % 5 === 0) { 
+      if (post.id % 5 === 0) {
         return {
           ...post,
           videoUrl: VIDEO_URL,
-          imageUrl: undefined, 
+          imageUrl: undefined,
         };
       }
-      
       return {
         ...post,
-        imageUrl: `https://picsum.photos/id/${post.id % 100}/400/200`, // Assign image
-        videoUrl: undefined, // Ensure video is undefined
+        imageUrl: `https://picsum.photos/id/${post.id % 100}/400/200`,
+        videoUrl: undefined,
       };
     });
   }, []);
@@ -110,7 +97,7 @@ const HomeScreen = () => {
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
       const firstVisibleItem = viewableItems[0];
-      
+
       if (firstVisibleItem && firstVisibleItem.isViewable && firstVisibleItem.item) {
         const visiblePost = firstVisibleItem.item as Post;
         if (visiblePost.videoUrl) {
@@ -125,7 +112,7 @@ const HomeScreen = () => {
   ).current;
 
   const viewabilityConfig = useRef<ViewabilityConfig>({
-    itemVisiblePercentThreshold: 50, 
+    itemVisiblePercentThreshold: 50,
   }).current;
 
   const loadInitial = useCallback(async () => {
@@ -134,7 +121,7 @@ const HomeScreen = () => {
     isLoadingRef.current = true;
     try {
       const response = await fetchData(POSTS_PER_PAGE, 0);
-      const items = mapMediaToPosts(response.posts); 
+      const items = mapMediaToPosts(response.posts);
       setPosts(items);
       setTotal(response.total);
       setSkip(items.length);
@@ -153,13 +140,13 @@ const HomeScreen = () => {
     setError(null);
     setIsFetchingMore(true);
     isLoadingRef.current = true;
-    
+
     try {
       const response = await fetchData(POSTS_PER_PAGE, skip);
       const items = mapMediaToPosts(response.posts);
-      
+
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setPosts((prev) => {
         const existingIds = new Set(prev.map((p) => p.id));
         const newItems = items.filter((p) => !existingIds.has(p.id));
@@ -178,7 +165,6 @@ const HomeScreen = () => {
     }
   }, [hasMore, skip, mapMediaToPosts]);
 
-
   useEffect(() => {
     if (!authLoading && user) {
       loadInitial();
@@ -190,7 +176,7 @@ const HomeScreen = () => {
     setTimeout(() => {
       setPostsLoading(true);
       loadInitial();
-    }, 400); 
+    }, 400);
   }, [loadInitial]);
 
   const handleScroll = useCallback(
@@ -246,6 +232,170 @@ const HomeScreen = () => {
     );
   }, [isFetchingMore, hasMore]);
 
+  const data = [
+  {
+    user_id: 1,
+    user_image:
+      'https://pbs.twimg.com/profile_images/1222140802475773952/61OmyINj.jpg',
+    user_name: 'Ahmet Çağlar',
+    stories: [
+      {
+        story_id: 101,
+        story_image:
+          'https://image.freepik.com/free-vector/universe-mobile-wallpaper-with-planets_79603-600.jpg',
+        swipeText: 'Swipe to see more',
+        onPress: () => console.log('story 1 swiped'),
+      },
+    ],
+  },
+  {
+    user_id: 2,
+    user_image:
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
+    user_name: 'Sarah Jones',
+    stories: [
+      {
+        story_id: 201,
+        story_image:
+          'https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600&fit=crop',
+        swipeText: 'Read article',
+      },
+      {
+        story_id: 202,
+        story_image:
+          'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 3,
+    user_image:
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop',
+    user_name: 'Mike Chen',
+    stories: [
+      {
+        story_id: 301,
+        story_image:
+          'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 4,
+    user_image:
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop',
+    user_name: 'Emily White',
+    stories: [
+      {
+        story_id: 401,
+        story_image:
+          'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600&fit=crop',
+      },
+      {
+        story_id: 402,
+        story_image:
+          'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 5,
+    user_image:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+    user_name: 'David Miller',
+    stories: [
+      {
+        story_id: 501,
+        story_image:
+          'https://images.unsplash.com/photo-1530103862676-de3c9a64db2b?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 6,
+    user_image:
+      'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=400&fit=crop',
+    user_name: 'Jessica Brown',
+    stories: [
+      {
+        story_id: 601,
+        story_image:
+          'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&fit=crop',
+      },
+      {
+        story_id: 602,
+        story_image:
+          'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 7,
+    user_image:
+      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop',
+    user_name: 'Ryan Wilson',
+    stories: [
+      {
+        story_id: 701,
+        story_image:
+          'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 8,
+    user_image:
+      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop',
+    user_name: 'Olivia Taylor',
+    stories: [
+      {
+        story_id: 801,
+        story_image:
+          'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 9,
+    user_image:
+      'https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?w=400&h=400&fit=crop',
+    user_name: 'Daniel Moore',
+    stories: [
+      {
+        story_id: 901,
+        story_image:
+          'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 10,
+    user_image:
+      'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop',
+    user_name: 'Sophia A.',
+    stories: [
+      {
+        story_id: 1001,
+        story_image:
+          'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&fit=crop',
+      },
+    ],
+  },
+  {
+    user_id: 11,
+    user_image:
+      'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=400&fit=crop',
+    user_name: 'James T.',
+    stories: [
+      {
+        story_id: 1101,
+        story_image:
+          'https://images.unsplash.com/photo-1511920160042-a95088f9c169?w=600&fit=crop',
+      },
+    ],
+  },
+];
+
   return (
     <ScreenContainer
       onNotificationPress={handleNotificationPress}
@@ -268,13 +418,13 @@ const HomeScreen = () => {
           }
 
           const isVisible = item.videoUrl ? item.id === visibleVideoId : false;
-          
+
           return (
-            <PostCard 
-              item={item} 
-              onDelete={handleDeletePost} 
-              isVisible={isVisible} 
-              onVideoPress={handleOpenVideoModal} 
+            <PostCard
+              item={item}
+              onDelete={handleDeletePost}
+              isVisible={isVisible}
+              onVideoPress={handleOpenVideoModal}
             />
           );
         }}
@@ -288,6 +438,15 @@ const HomeScreen = () => {
         maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         ListHeaderComponent={
           <>
+            <InstaStory
+              avatarSize={65}
+              avatarWrapperStyle={{ marginRight: 8 }}
+              unPressedBorderColor={Colors.primary}
+              pressedBorderColor="#e5e7eb"
+              style={{ padding: 12 }}
+              data={data}
+              duration={10}
+            />
             {error && !postsLoading && (
               <View className="my-2">
                 <Text className="text-red-500 text-base text-center my-2">
@@ -304,13 +463,7 @@ const HomeScreen = () => {
 
       {isFabVisible && (
         <TouchableOpacity
-          className="
-            absolute bottom-6 right-5 h-14 w-14 
-            items-center justify-center rounded-full 
-            bg-blue-500 
-            shadow-lg android:elevation-8 
-            z-10
-          "
+          className="absolute bottom-6 right-5 h-14 w-14 items-center justify-center rounded-full bg-blue-500 shadow-lg android:elevation-8 z-10"
           onPress={scrollToTop}
           activeOpacity={0.7}
         >
@@ -318,7 +471,6 @@ const HomeScreen = () => {
         </TouchableOpacity>
       )}
 
-      
       <Modal
         visible={!!modalVideoSource}
         transparent={false}
@@ -330,7 +482,6 @@ const HomeScreen = () => {
           onClose={handleCloseVideoModal}
         />
       </Modal>
-
     </ScreenContainer>
   );
 };

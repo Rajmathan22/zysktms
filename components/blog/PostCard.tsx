@@ -1,7 +1,8 @@
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, Share, Text, View } from 'react-native';
+import { Image, Share, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuthContext } from '../../providers/AuthProvider';
 
 import Button from '../common/Button';
@@ -54,6 +55,14 @@ const PostCard: React.FC<PostCardProps> = ({ item, onDelete, isVisible, onVideoP
   return (
     <View className="bg-white rounded-xl mb-4 mr-4 ml-4 mt-2 overflow-hidden shadow-lg border border-gray-200">
       <View className="absolute top-2.5 right-2.5 z-10 flex-row gap-2">
+        <TouchableOpacity onPress={handleShare} className="bg-white/80 p-1.5 rounded-full">
+          <MaterialIcons name="share" size={20} color="#4B5563" />
+        </TouchableOpacity>
+        {role === 'admin' && onDelete && (
+          <TouchableOpacity onPress={handleDelete} className="bg-white/80 p-1.5 rounded-full">
+            <MaterialIcons name="delete" size={20} color="#EF4444" />
+          </TouchableOpacity>
+        )}
       </View>
       
       {item.videoUrl ? (

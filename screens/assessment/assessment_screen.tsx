@@ -174,17 +174,14 @@ export default function AssessmentScreen() {
     }
   }, [id]);
 
-  // Exam security functions
   const handleExamViolation = useCallback(() => {
     const newAttempts = examViolationAttempts + 1;
     setExamViolationAttempts(newAttempts);
     
     if (newAttempts >= 2) {
-      // Max violations reached - force submit
       setIsForcedSubmission(true);
-      handleExamCompletion(false, true); // Pass true for forced submission
+      handleExamCompletion(false, true);
     } else {
-      // Show warning modal
       setShowViolationModal(true);
       modalActiveRef.current = true;
     }
@@ -193,7 +190,6 @@ export default function AssessmentScreen() {
   const handleContinueExam = useCallback(() => {
     setShowViolationModal(false);
     modalActiveRef.current = false;
-    // Force timer sync by briefly updating timeRemaining to trigger Timer component sync
     const currentTime = timeRemainingRef.current;
     setTimeRemaining(currentTime);
   }, []);
@@ -222,7 +218,6 @@ export default function AssessmentScreen() {
       if (databaseManager) {
         databaseManager.closeDatabase();
       }
-      // Cleanup timer on unmount
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -235,7 +230,6 @@ export default function AssessmentScreen() {
       await dbManager.clearAllAnswers();
       setHasExistingData(false);
       setSelectedOptions({});
-      // Reset to first question when clearing data
       updateCurrentQuestionIndex(0);
     } catch (error) {
       console.error("Error clearing previous data:", error);

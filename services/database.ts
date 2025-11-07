@@ -88,7 +88,6 @@ export class DatabaseManager {
   async checkDatabaseExists(): Promise<boolean> {
     try {
       await this.openDb();
-      // Check without creating: does the table exist?
       const tableExistsRows = await this.db?.getAllAsync(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
         [this.tableName()]
@@ -111,9 +110,7 @@ export class DatabaseManager {
     }
   }
 
-  /**
-   * Save or update an answer for a question
-   */
+
   async saveAnswer(
     questionId: number,
     questionText: string,
@@ -133,7 +130,6 @@ export class DatabaseManager {
         created_at: new Date().toISOString(),
       };
 
-      // Use INSERT OR REPLACE to update existing answers
       await this.withReconnect(
         () => this.db!.runAsync(
           `INSERT OR REPLACE INTO ${this.tableName()} 
@@ -148,12 +144,10 @@ export class DatabaseManager {
 
       console.log(`Answer saved for question ${questionId}, option ${selectedOptionId}`);
     } catch (error) {
-      // Swallow errors to avoid surfacing native issues during background/resume; will retry on next call
       console.warn('Error saving answer (non-fatal):', error);
     }
   }
 
-  /** Safe variant that never throws */
   async saveAnswerNoThrow(
     questionId: number,
     questionText: string,
@@ -165,9 +159,7 @@ export class DatabaseManager {
     } catch {}
   }
 
-  /**
-   * Get all saved answers for the current exam
-   */
+
   async getAllAnswers(): Promise<ExamAnswer[]> {
     try {
       if (!this.db) {

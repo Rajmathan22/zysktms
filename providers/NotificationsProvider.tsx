@@ -1,12 +1,12 @@
 import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotifications";
 import * as Notifications from "expo-notifications";
 import React, {
-    createContext,
-    ReactNode,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 
 interface NotificationContextType {
@@ -63,7 +63,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
           JSON.stringify(response, null, 2),
           JSON.stringify(response.notification.request.content.data, null, 2)
         );
-        // Handle the notification response here
       });
 
     return () => {

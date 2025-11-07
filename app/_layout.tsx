@@ -29,6 +29,9 @@ export default function RootLayout() {
     "Nunito-Bold": require("../assets/fonts/Nunito-Bold.ttf"),
   });
 
+
+
+
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
   }, []);

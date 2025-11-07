@@ -48,13 +48,11 @@ export const useAuth = () => {
     }
   }, [request]);
 
-  // This effect handles the response from the GitHub authentication flow
   useEffect(() => {
     const exchangeCodeForCredential = async (code: string) => {
       setLoading(true);
       setError(null);
       try {
-        // 1. Exchange the authorization code for an access token
         const tokenResponse = await fetch(discovery.tokenEndpoint, {
           method: 'POST',
           headers: {
@@ -65,7 +63,7 @@ export const useAuth = () => {
             client_id: process.env.EXPO_PUBLIC_GITHUB_CLIENT_ID,
             client_secret: process.env.EXPO_PUBLIC_GITHUB_CLIENT_SECRET,
             code: code,
-            code_verifier: request?.codeVerifier, // Include PKCE code_verifier
+            code_verifier: request?.codeVerifier, 
           }),
         });
 
@@ -80,10 +78,8 @@ export const useAuth = () => {
 
         console.log('GitHub Access Token received successfully.');
 
-        // 2. Create a Firebase credential with the GitHub access token
         const credential = GithubAuthProvider.credential(access_token);
         
-        // 3. Sign-in the user with the Firebase credential
         await signInWithCredential(auth, credential);
         console.log('User signed in with Firebase using GitHub credential.');
 
@@ -118,7 +114,6 @@ export const useAuth = () => {
     }
   };
 
-  // --- Google Sign-in ---
   const signInWithGoogle = async () => {
     setLoading(true);
     setError(null);
@@ -147,7 +142,6 @@ export const useAuth = () => {
     setError(null);
     try {
       if (request) {
-        // This opens the browser for the GitHub login page
         await promptAsync();
       } else {
         throw new Error('GitHub authentication request is not available.');
