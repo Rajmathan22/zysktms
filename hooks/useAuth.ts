@@ -4,6 +4,8 @@ import {
   isSuccessResponse
 } from '@react-native-google-signin/google-signin';
 import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
 import {
   GithubAuthProvider,
   GoogleAuthProvider,
@@ -11,6 +13,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { auth } from '../services/firebase';
 
 
@@ -40,6 +43,46 @@ export const useAuth = () => {
     },
     discovery
   );
+
+  const askToEnableBiometrics = async () => {
+  try {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasHardware) return; // No biometrics, just skip
+
+    // Check if they already said yes or no
+    const existing = await SecureStore.getItemAsync('biometricsEnabled');
+    if (existing) return; // Don't ask again
+
+    // Ask for permission
+    Alert.alert(
+      'Enable Biometric Unlock?',
+      'Would you like to use your fingerprint/face/passcode to unlock the app next time?',
+      [
+        { 
+          text: 'No', 
+          style: 'cancel',
+          onPress: () => SecureStore.setItemAsync('biometricsEnabled', 'false')
+        },
+        { 
+          text: 'Yes', 
+          onPress: async () => {
+            // They said yes. Do one "practice" authentication
+            const result = await LocalAuthentication.authenticateAsync({
+              promptMessage: 'Confirm to enable biometrics',
+            });
+            if (result.success) {
+              // It worked! Save the 'true' flag
+              await SecureStore.setItemAsync('biometricsEnabled', 'true');
+              Alert.alert('Enabled!', 'Biometric unlock is now set up.');
+            }
+          } 
+        }
+      ]
+    );
+  } catch (e) {
+    console.error('Error in askToEnableBiometrics:', e);
+  }
+};
 
   useEffect(() => {
     if (request) {
@@ -83,6 +126,8 @@ export const useAuth = () => {
         await signInWithCredential(auth, credential);
         console.log('User signed in with Firebase using GitHub credential.');
 
+        await askToEnableBiometrics();
+
       } catch (e: any) {
         console.error('Error during GitHub sign-in process:', e);
         setError(e.message || 'An unexpected error occurred during GitHub sign-in.');
@@ -106,6 +151,7 @@ export const useAuth = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log('User Validated with Email.');
+      await askToEnableBiometrics();
     } catch (e) {
       console.log('Error in signInWithEmail:', e);
       setError(e instanceof Error ? e.message : 'Login failed');
@@ -125,6 +171,7 @@ export const useAuth = () => {
         const googleCredential = GoogleAuthProvider.credential(response.data.idToken);
         await signInWithCredential(auth, googleCredential);
         console.log('User authenticated with Firebase via Google successfully');
+        await askToEnableBiometrics();
       }
     } catch (e) {
       if (isErrorWithCode(e)) {
