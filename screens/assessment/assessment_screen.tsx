@@ -35,33 +35,30 @@ export default function AssessmentScreen() {
   const [answeredQuestions, setAnsweredQuestions] = useState<{ [key: number]: boolean }>({});
   const { id, name } = useLocalSearchParams<{ id?: string; name?: string }>();
   const router = useRouter();
+  const EXAM_VIOLATION_LIMIT = 3;
   const [assessmentStarted, setAssessmentStarted] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestionIndexRef = useRef(0);
   const [selectedOptions, setSelectedOptions] = useState<{ [key: number]: number }>({});
   
-  // Separate stepper state to prevent re-renders
   const [stepperCurrentIndex, setStepperCurrentIndex] = useState(0);
   const stepperCurrentIndexRef = useRef(0);
   const [databaseManager, setDatabaseManager] = useState<DatabaseManager | null>(null);
   const [hasExistingData, setHasExistingData] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Timer state
-  const [timeLimit, setTimeLimit] = useState<number>(0); // in seconds
-  const [timeRemaining, setTimeRemaining] = useState<number>(0); // in seconds
+  const [timeLimit, setTimeLimit] = useState<number>(0); 
+  const [timeRemaining, setTimeRemaining] = useState<number>(0); 
   const [timerActive, setTimerActive] = useState(false);
   const timerRef = useRef<any>(null);
   const timeRemainingRef = useRef<number>(0);
   
-  // Completion flow state
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [showSubmissionAnimation, setShowSubmissionAnimation] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   
-  // Exam security state
   const [examViolationAttempts, setExamViolationAttempts] = useState(0);
   const [showViolationModal, setShowViolationModal] = useState(false);
   const [isExamSecured, setIsExamSecured] = useState(false);
@@ -71,15 +68,12 @@ export default function AssessmentScreen() {
   const lastActiveTime = useRef(Date.now());
   const [isExamCompleted, setIsExamCompleted] = useState(false);
 
-  // Stepper pagination state
   const [stepperPage, setStepperPage] = useState(0);
-  const ITEMS_PER_PAGE = 5; // Number of stepper items to show at once
+  const ITEMS_PER_PAGE = 5; 
 
-  // Storage keys
   const getStorageKey = () => `assessment_${id}_currentIndex`;
   const getCompletionKey = () => `assessment_${id}_completed`;
 
-  // Load persisted question index
   const loadPersistedIndex = useCallback(async () => {
     try {
       const key = getStorageKey();
@@ -91,7 +85,6 @@ export default function AssessmentScreen() {
         setCurrentQuestionIndex(index);
         setStepperCurrentIndex(index);
         
-        // Set initial stepper page
         const initialPage = Math.floor(index / ITEMS_PER_PAGE);
         setStepperPage(initialPage);
       }
@@ -100,7 +93,6 @@ export default function AssessmentScreen() {
     }
   }, [id, ITEMS_PER_PAGE]);
 
-  // Save current question index to storage
   const saveCurrentIndex = useCallback(async (index: number) => {
     try {
       const key = getStorageKey();
@@ -111,27 +103,24 @@ export default function AssessmentScreen() {
     }
   }, [id]);
 
-  // Update current question index with persistence
+ 
   const updateCurrentQuestionIndex = useCallback((index: number) => {
     currentQuestionIndexRef.current = index;
     stepperCurrentIndexRef.current = index;
     setCurrentQuestionIndex(index);
     setStepperCurrentIndex(index);
     
-    // Update stepper page if needed
     const newPage = Math.floor(index / ITEMS_PER_PAGE);
     setStepperPage(newPage);
     
     saveCurrentIndex(index);
   }, [saveCurrentIndex, ITEMS_PER_PAGE]);
 
-  // Check if exam is already completed (and reconcile with DB state)
   const checkExamCompletion = useCallback(async () => {
     try {
       const completionKey = getCompletionKey();
       const completed = await AsyncStorage.getItem(completionKey);
       if (completed === 'true') {
-        // Reconcile with DB: if no table/data exists for this exam, treat as fresh attempt
         if (!id) {
           await AsyncStorage.removeItem(completionKey);
           setIsExamCompleted(false);
@@ -163,7 +152,6 @@ export default function AssessmentScreen() {
     }
   }, [id]);
 
-  // Mark exam as completed
   const markExamCompleted = useCallback(async () => {
     try {
       const completionKey = getCompletionKey();
@@ -174,18 +162,83 @@ export default function AssessmentScreen() {
     }
   }, [id]);
 
-  const handleExamViolation = useCallback(() => {
-    const newAttempts = examViolationAttempts + 1;
-    setExamViolationAttempts(newAttempts);
-    
-    if (newAttempts >= 2) {
-      setIsForcedSubmission(true);
-      handleExamCompletion(false, true);
-    } else {
-      setShowViolationModal(true);
-      modalActiveRef.current = true;
+ 
+  const logQuestionsAndAnswers = async () => {
+    try {
+      console.log("=== EXAM COMPLETION LOG ===");
+      console.log(`Total Questions: ${questions.length}`);
+      console.log(`Time Limit: ${Math.floor(timeLimit / 60)} minutes`);
+      console.log(`Time Remaining: ${Math.floor(timeRemaining / 60)}:${(timeRemaining % 60).toString().padStart(2, '0')}`);
+      
+      questions.forEach((question, index) => {
+        const selectedOptionId = selectedOptions[question.question_id];
+        const selectedOption = question.options.find(opt => opt.option_id === selectedOptionId);
+        
+        console.log(`Question ${index + 1}:`);
+        console.log(`  ID: ${question.question_id}`);
+        console.log(`  Question: ${question.question}`);
+        console.log(`  Selected Option ID: ${selectedOptionId || 'Not answered'}`);
+        console.log(`  Selected Option Text: ${selectedOption?.text || 'Not answered'}`);
+        console.log('---');
+      });
+      
+      const answeredCount = Object.keys(selectedOptions).length;
+      console.log(`Answered: ${answeredCount}/${questions.length} questions`);
+      console.log("=== END LOG ===");
+    } catch (error) {
+      console.error("Error logging questions and answers:", error);
     }
-  }, [examViolationAttempts]);
+  };
+
+  const handleExamCompletion = async (isTimeUp = false, isForced = false) => {
+    try {
+      setIsExamSecured(false);
+      
+      setTimerActive(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      
+      if (databaseManager) {
+        const key = getStorageKey();
+        await AsyncStorage.removeItem(key);
+        await databaseManager.dropExamTable();
+      }
+      
+      await logQuestionsAndAnswers();
+      
+      setIsTimeUp(isTimeUp);
+      setIsForcedSubmission(isForced);
+      setIsSubmitted(true);
+      
+      await markExamCompleted();
+      
+      if (isTimeUp || isForced) {
+        setShowSubmissionAnimation(true);
+        
+        router.replace('/feedback');
+        
+      } else {
+        updateCurrentQuestionIndex(0);
+      }
+    } catch (error) {
+      console.error("Error handling exam completion:", error);
+    }
+  };
+
+  const handleExamViolation = useCallback(() => {
+    setExamViolationAttempts((prev) => {
+      const next = prev + 1;
+      if (next >= EXAM_VIOLATION_LIMIT) {
+        setIsForcedSubmission(true);
+        handleExamCompletion(false, true);
+      } else {
+        setShowViolationModal(true);
+        modalActiveRef.current = true;
+      }
+      return next;
+    });
+  }, [handleExamCompletion, EXAM_VIOLATION_LIMIT]);
 
   const handleContinueExam = useCallback(() => {
     setShowViolationModal(false);
@@ -198,12 +251,11 @@ export default function AssessmentScreen() {
     setShowViolationModal(false);
     modalActiveRef.current = false;
     setIsForcedSubmission(true);
-    handleExamCompletion(false, true); // Pass true for forced submission
+    handleExamCompletion(false, true); 
   }, []);
 
   useEffect(() => {
     if (id) {
-      // Check if exam is already completed first
       checkExamCompletion().then((completed) => {
         if (!completed) {
           setDatabaseManager(new DatabaseManager(id));
@@ -289,7 +341,7 @@ export default function AssessmentScreen() {
       if (data.results && data.results.length > 0) {
         setQuestions(data.results);
         
-        const timeLimitMinutes = data.timeLimit || 30; // Default to 30 minutes if not provided
+        const timeLimitMinutes = data.timeLimit || 30; 
         const timeLimitSeconds = timeLimitMinutes * 60;
         setTimeLimit(timeLimitSeconds);
         setTimeRemaining(timeLimitSeconds);
@@ -329,7 +381,6 @@ export default function AssessmentScreen() {
 
   const handleOptionSelect = useCallback(async (questionId: number, optionId: number) => {
     setSelectedOptions((prev) => ({ ...prev, [questionId]: optionId }));
-    // Persist immediately with safe guards against background/resume
     try {
       if (!databaseManager) return;
       await databaseManager.saveAnswerNoThrow(
@@ -355,101 +406,14 @@ export default function AssessmentScreen() {
     }
   };
 
-  // Log all questions and selected answers
-  const logQuestionsAndAnswers = async () => {
-    try {
-      console.log("=== EXAM COMPLETION LOG ===");
-      console.log(`Total Questions: ${questions.length}`);
-      console.log(`Time Limit: ${Math.floor(timeLimit / 60)} minutes`);
-      console.log(`Time Remaining: ${Math.floor(timeRemaining / 60)}:${(timeRemaining % 60).toString().padStart(2, '0')}`);
-      
-      questions.forEach((question, index) => {
-        const selectedOptionId = selectedOptions[question.question_id];
-        const selectedOption = question.options.find(opt => opt.option_id === selectedOptionId);
-        
-        console.log(`Question ${index + 1}:`);
-        console.log(`  ID: ${question.question_id}`);
-        console.log(`  Question: ${question.question}`);
-        console.log(`  Selected Option ID: ${selectedOptionId || 'Not answered'}`);
-        console.log(`  Selected Option Text: ${selectedOption?.text || 'Not answered'}`);
-        console.log('---');
-      });
-      
-      const answeredCount = Object.keys(selectedOptions).length;
-      console.log(`Answered: ${answeredCount}/${questions.length} questions`);
-      console.log("=== END LOG ===");
-    } catch (error) {
-      console.error("Error logging questions and answers:", error);
-    }
-  };
-
-  const handleExamCompletion = async (isTimeUp = false, isForced = false) => {
-    try {
-      // Disable exam security when completing
-      setIsExamSecured(false);
-      
-      // Stop the timer
-      setTimerActive(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      
-      // Clear persisted data (index) and drop the per-exam table in shared DB
-      if (databaseManager) {
-        const key = getStorageKey();
-        await AsyncStorage.removeItem(key);
-        try {
-          await databaseManager.dropExamTable();
-          const stillExists = await databaseManager.checkDatabaseExists();
-          if (stillExists) {
-            await databaseManager.clearAllAnswers();
-            console.warn('Exam table still present after drop; cleared rows as fallback');
-          }
-        } catch (e) {
-          console.warn('Failed dropping exam table on completion:', e);
-        }
-      }
-      
-      // Log all questions and answers
-      await logQuestionsAndAnswers();
-      
-      setIsTimeUp(isTimeUp);
-      setIsForcedSubmission(isForced);
-      setIsSubmitted(true);
-      
-      // Mark exam as completed in persistent storage
-      await markExamCompleted();
-      
-      if (isTimeUp || isForced) {
-        // Timer completed or forced submission - go directly to feedback
-        setShowSubmissionAnimation(true);
-        
-        // IMMEDIATELY replace navigation to remove exam screen from stack
-        router.replace('/feedback');
-        
-      } else {
-        updateCurrentQuestionIndex(0);
-      }
-    } catch (error) {
-      console.error("Error handling exam completion:", error);
-    }
-  };
+ 
   
   const handleSubmitExam = async () => {
     try {
       if (databaseManager) {
         const key = getStorageKey();
         await AsyncStorage.removeItem(key);
-        try {
-          await databaseManager.dropExamTable();
-          const stillExists = await databaseManager.checkDatabaseExists();
-          if (stillExists) {
-            await databaseManager.clearAllAnswers();
-            console.warn('Exam table still present after drop; cleared rows as fallback');
-          }
-        } catch (e) {
-          console.warn('Failed dropping exam table on submit:', e);
-        }
+        await databaseManager.dropExamTable();
       }
       
       setShowCompletionModal(false);
@@ -473,21 +437,15 @@ export default function AssessmentScreen() {
     setShowCompletionModal(false);
   };
   
-  // Global back button handler to prevent returning to exam screen
   useEffect(() => {
     if (isSubmitted) {
-      // Disable all security listeners since exam is complete
       setIsExamSecured(false);
       
-      // Add permanent back button handler to prevent any navigation back to exam
       const preventBackHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-        // After exam submission, completely block back navigation
         console.log('Back navigation permanently blocked - exam completed');
-        // Force stay on current screen (dashboard)
-        return true; // Block all back navigation
+        return true; 
       });
       
-      // This handler should remain active permanently
       return () => {
         preventBackHandler.remove();
       };
@@ -570,7 +528,10 @@ export default function AssessmentScreen() {
         console.log('Timer tick:', timeRemainingRef.current);
         
         // Update state to trigger re-render of Timer component
-        setTimeRemaining(timeRemainingRef.current);
+        // Avoid triggering parent re-render while violation modal is open
+        if (!modalActiveRef.current) {
+          setTimeRemaining(timeRemainingRef.current);
+        }
         
         // Stop timer when it reaches 0
         if (timeRemainingRef.current <= 0) {
@@ -606,14 +567,8 @@ export default function AssessmentScreen() {
     // Back button handler - more aggressive monitoring
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       // If violation modal is already showing, this is a repeated violation
-      if (modalActiveRef.current) {
-        // Force submit immediately on repeated violation during modal
-        modalActiveRef.current = false;
-        setShowViolationModal(false);
-        setIsForcedSubmission(true);
-        handleExamCompletion(false, true);
-      } else {
-        // First violation - show modal
+      // While modal is open, ignore additional back presses to avoid double-counting
+      if (!modalActiveRef.current) {
         handleExamViolation();
       }
       return true; // Prevent default back action
@@ -631,17 +586,8 @@ export default function AssessmentScreen() {
       if (previousState === 'active' && (nextAppState === 'background' || nextAppState === 'inactive')) {
         console.log('App backgrounded - violation detected');
         
-        // If violation modal is already showing, this is a repeated violation
-        if (modalActiveRef.current) {
-          console.log('Repeated violation during modal - force submit');
-          // Force submit immediately on repeated violation during modal
-          modalActiveRef.current = false;
-          setShowViolationModal(false);
-          setIsForcedSubmission(true);
-          handleExamCompletion(false, true);
-        } else {
-          console.log('First violation - show modal');
-          // First violation - show modal
+        // Avoid double-counting while the warning modal is visible
+        if (!modalActiveRef.current) {
           handleExamViolation();
         }
       }
@@ -652,43 +598,12 @@ export default function AssessmentScreen() {
       }
     };
 
-    // Additional focus/blur monitoring for web-like behavior
-    const handleFocus = () => {
-      console.log('App gained focus');
-      appStateRef.current = 'active';
-      lastActiveTime.current = Date.now();
-    };
-
-    const handleBlur = () => {
-      console.log('App lost focus - potential violation');
-      // Treat focus loss as backgrounding
-      if (appStateRef.current === 'active') {
-        handleAppStateChange('background');
-      }
-    };
-
     // Listen to multiple event sources for comprehensive coverage
     const appStateSubscription = AppState.addEventListener('change', handleAppStateChange);
-    
-    // Additional event listeners for better coverage
-    const focusSubscription = AppState.addEventListener('focus', handleFocus);
-    const blurSubscription = AppState.addEventListener('blur', handleBlur);
-
-    // Periodic check for app state consistency
-    const stateCheckInterval = setInterval(() => {
-      const currentState = AppState.currentState;
-      if (currentState !== appStateRef.current) {
-        console.log('State inconsistency detected:', appStateRef.current, '->', currentState);
-        handleAppStateChange(currentState);
-      }
-    }, 1000); // Check every second
 
     return () => {
       backHandler.remove();
       appStateSubscription?.remove();
-      focusSubscription?.remove();
-      blurSubscription?.remove();
-      clearInterval(stateCheckInterval);
     };
   }, [isExamSecured, handleExamViolation]);
 
@@ -846,7 +761,7 @@ export default function AssessmentScreen() {
 
   // Violation Warning Modal Component - memoized to prevent re-renders
   const ViolationWarningModal = React.memo(() => {
-    const remainingAttempts = 2 - examViolationAttempts;
+    const remainingAttempts = EXAM_VIOLATION_LIMIT - examViolationAttempts;
     
     return (
       <Modal

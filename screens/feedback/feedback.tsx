@@ -3,31 +3,30 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    BackHandler,
-    Easing,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View
+  ActivityIndicator,
+  Animated,
+  BackHandler,
+  Easing,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// --- UI Constants for a Refreshed Theme ---
 const COLORS = {
-  primary: '#5E5CE6', // A vibrant purple
-  secondary: '#34C759', // A bright, successful green
+  primary: '#5E5CE6', 
+  secondary: '#34C759', 
   text: '#1C1C1E',
   textSecondary: '#8A8A8E',
   backgroundStart: '#F7F7F7',
   backgroundEnd: '#E9ECF5',
   white: '#FFFFFF',
-  border: 'rgba(255, 255, 255, 0.4)', // For the glass effect
-  shadow: 'rgba(94, 92, 230, 0.15)', // A soft shadow matching the primary color
-  warning: '#FFD60A', // A richer, warmer yellow
+  border: 'rgba(255, 255, 255, 0.4)', 
+  shadow: 'rgba(94, 92, 230, 0.15)', 
+  warning: '#FFD60A',
 };
 
 const SIZES = {
@@ -37,19 +36,16 @@ const SIZES = {
 
 const RATING_LABELS = ["", "Not Great", "It Was Okay", "Good", "Great!", "Loved It!"];
 
-// --- Main Component ---
 export default function FeedbackScreen() {
   const router = useRouter();
   const [feedbackData, setFeedbackData] = useState({ rating: 0, comment: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCommentFocused, setIsCommentFocused] = useState(false);
 
-  // --- Animation Values ---
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const starAnimations = useRef([1,2,3,4,5].map(() => new Animated.Value(1))).current;
 
-  // Animate the selected star with a "pop"
   const animateStar = (rating: number) => {
     const starIndex = rating - 1;
     if (starIndex < 0) return;
@@ -64,14 +60,12 @@ export default function FeedbackScreen() {
   };
 
   useEffect(() => {
-    // Entrance animations
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   }, []);
   
-  // Prevent back navigation
   useFocusEffect(
     useCallback(() => {
       const backAction = () => { router.replace('/'); return true; };
@@ -102,7 +96,6 @@ export default function FeedbackScreen() {
         <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
         
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          {/* --- Success Header with Illustration --- */}
           <Animated.View style={[styles.successHeader, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             
             <View style={styles.successIconContainer}>
@@ -112,13 +105,11 @@ export default function FeedbackScreen() {
             <Text style={styles.successSubtitle}>Thanks for completing the assessment.</Text>
           </Animated.View>
 
-          {/* --- Feedback Form (Glassmorphism) --- */}
           <Animated.View style={[styles.feedbackCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             <View style={styles.feedbackHeader}>
               <Text style={styles.feedbackTitle}>How was your experience?</Text>
             </View>
             
-            {/* --- Animated Star Rating Section --- */}
             <View style={styles.starsContainer}>
               {[1, 2, 3, 4, 5].map((star, index) => (
                 <Pressable key={star} onPress={() => handleRatingSelect(star)}>
@@ -136,7 +127,6 @@ export default function FeedbackScreen() {
               {RATING_LABELS[feedbackData.rating] || 'Rate your experience'}
             </Text>
             
-            {/* --- Comment Section --- */}
             <TextInput
               style={[ styles.commentInput, isCommentFocused && styles.commentInputFocused ]}
               multiline
@@ -149,7 +139,6 @@ export default function FeedbackScreen() {
             />
           </Animated.View>
 
-          {/* --- Action Buttons --- */}
           <Animated.View style={[styles.actionButtonsContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             <Pressable 
               style={({ pressed }) => [
@@ -185,7 +174,6 @@ export default function FeedbackScreen() {
 }
 
 
-// --- Stylesheet ---
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -196,7 +184,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   
-  // --- Header ---
   successHeader: {
     alignItems: "center",
     paddingTop: 40,
@@ -220,9 +207,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   
-  // --- Glassmorphic Card ---
   feedbackCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.6)', // Semi-transparent background
+    backgroundColor: 'rgba(255, 255, 255, 0.6)', 
     borderRadius: SIZES.radius,
     padding: SIZES.padding,
     marginBottom: 32,
@@ -244,7 +230,6 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   
-  // --- Rating ---
   starsContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -257,10 +242,9 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: "center",
     marginBottom: 24,
-    height: 22, // Prevents layout shift
+    height: 22, 
   },
   
-  // --- Comment ---
   commentInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderRadius: 16,
@@ -278,7 +262,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   
-  // --- Buttons ---
   actionButtonsContainer: {
     alignItems: 'center',
   },
@@ -293,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   submitButtonPressed: {
-    transform: [{ scale: 0.98 }], // Press-in effect
+    transform: [{ scale: 0.98 }], 
   },
   submitButtonGradient: {
     flexDirection: "row",

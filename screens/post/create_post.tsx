@@ -2,10 +2,10 @@ import { createBlogPost } from '@/api/api';
 import ScreenContainer from '@/components/layout/ScreenContainer';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Button from '../../components/common/Button';
-import { useRouter } from 'expo-router';
 
 type PickedImage = {
   uri: string;

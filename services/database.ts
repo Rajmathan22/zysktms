@@ -105,7 +105,7 @@ export class DatabaseManager {
       console.log(`Found ${count} existing answers for exam ${this.examId} in table ${this.tableName()}`);
       return count > 0;
     } catch (error) {
-      console.error('Error checking database existence:', error);
+      console.warn('Error checking database existence (non-fatal):', error);
       return false;
     }
   }
@@ -240,7 +240,7 @@ export class DatabaseManager {
       );
       console.log(`Dropped table for exam ${this.examId} (${this.tableName()})`);
     } catch (error) {
-      console.error('Error dropping exam table:', error);
+      console.warn('Error dropping exam table (non-fatal):', error);
     }
   }
 

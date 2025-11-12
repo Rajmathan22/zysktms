@@ -6,25 +6,22 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 interface CardVideoPlayerProps {
   videoSource: string;
   isVisible: boolean;
-  onPress: () => void; // This prop comes from PostCard
+  onPress: () => void; 
 }
 
 const CardVideoPlayer: React.FC<CardVideoPlayerProps> = ({ 
   videoSource, 
   isVisible, 
-  onPress // We receive the onPress prop
+  onPress 
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const player = useVideoPlayer(videoSource, (player) => {
-    // Set initial properties for a card feed
     player.muted = true;
     player.loop = true;
   });
 
-  // <-- FIX 1: Removed the duplicate 'player' definition that was here.
 
-  // This logic is simplified for auto-play/pause
   useEffect(() => {
     if (isVisible) {
       player.play();
@@ -33,7 +30,7 @@ const CardVideoPlayer: React.FC<CardVideoPlayerProps> = ({
       player.pause();
       setIsPlaying(false);
     }
-  }, [isVisible, player]); // Only depends on visibility
+  }, [isVisible, player]); 
 
   return (
     <View style={styles.container}>
@@ -45,13 +42,11 @@ const CardVideoPlayer: React.FC<CardVideoPlayerProps> = ({
         allowsPictureInPicture={false}
       />
       
-      {/* This overlay now triggers the modal */}
       <TouchableOpacity 
         style={styles.overlay} 
-        onPress={onPress} // <-- FIX 2: Added the onPress prop here
+        onPress={onPress} 
         activeOpacity={0.8}
       >
-        {/* Show play icon only when paused */}
         {!isPlaying && (
           <View style={styles.iconContainer}>
             <Ionicons name="play" size={30} color="white" />
