@@ -89,12 +89,12 @@ const ExamsScreen = () => {
 
               <View style={styles.statsContainer}>
                 <View style={styles.statCard}>
-                  <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
+                  <Ionicons name="checkmark-circle-outline" size={24} color={Colors.success} />
                   <Text style={styles.statNumber}>{stats.completed}</Text>
                   <Text style={styles.statLabel}>Completed</Text>
                 </View>
                 <View style={styles.statCard}>
-                  <Ionicons name="time-outline" size={24} color="#FF9800" />
+                  <Ionicons name="time-outline" size={24} color={Colors.primary} />
                   <Text style={styles.statNumber}>{stats.upcoming}</Text>
                   <Text style={styles.statLabel}>Upcoming</Text>
                 </View>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.cardBackground,
     marginRight: 8,
     marginBottom: 8,
   },
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: {
       width: 0,
       height: 2,

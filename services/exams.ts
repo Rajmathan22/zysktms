@@ -81,7 +81,7 @@ export function statusDisplay(status: ExamStatus): { label: string; color: strin
       return { label: 'Upcoming', color: Colors.primary };
     
     case 'completed':
-      return { label: 'Completed', color: '#4CAF50' };
+      return { label: 'Completed', color: Colors.success };
     
     default:
       return { label: 'Unknown', color: Colors.grey };

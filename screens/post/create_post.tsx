@@ -1,5 +1,6 @@
 import { createBlogPost } from '@/api/api';
 import ScreenContainer from '@/components/layout/ScreenContainer';
+import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -96,8 +97,6 @@ const CreatePostScreen: React.FC = () => {
       <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View className="items-center mb-5">
-          {/* <Text className="text-3xl text-[#08A0F7] font-extrabold" style={{ fontFamily: 'Nunito-Bold' }}>Create New Blog Post</Text> */}
-          {/* <Text className="text-gray-500 mt-1" style={{ fontFamily: 'Nunito-Regular' }}>Share your thoughts with the world</Text> */}
         </View>
 
         {/* Card */}
@@ -113,8 +112,8 @@ const CreatePostScreen: React.FC = () => {
               <Image source={{ uri: featuredImage.uri }} className="w-full h-full rounded-lg" style={{ resizeMode: 'cover' }} />
             ) : (
               <View className="items-center">
-                <View className="w-12 h-12 rounded-full bg-[#E8F4FF] items-center justify-center mb-2">
-                  <Ionicons name="cloud-upload-outline" size={26} color="#08A0F7" />
+                <View className="w-12 h-12 rounded-full items-center justify-center mb-2">
+                  <Ionicons name="cloud-upload-outline" size={26} color={Colors.brandBlue} backgroundColor={Colors.iconBackgroundLightBlue} />
                 </View>
                 <Text className="text-gray-600" style={{ fontFamily: 'Nunito-Regular' }}>
                   Drop your image here, or <Text className="text-[#08A0F7]">browse</Text>
@@ -135,7 +134,7 @@ const CreatePostScreen: React.FC = () => {
             onChangeText={setTitle}
             placeholder="Enter your blog post title..."
             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 mb-4 text-gray-800"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={Colors.textPlaceholder}
           />
 
           {/* Category & Tags */}
@@ -147,7 +146,7 @@ const CreatePostScreen: React.FC = () => {
                 onChangeText={setCategory}
                 placeholder="e.g., Technology, Lifestyle"
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 mb-4 text-gray-800"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={Colors.textPlaceholder}
               />
             </View>
             <View className="flex-1">
@@ -157,7 +156,7 @@ const CreatePostScreen: React.FC = () => {
                 onChangeText={setTagsText}
                 placeholder="e.g., react, web-dev, tutorial"
                 className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 mb-4 text-gray-800"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={Colors.textPlaceholder}
               />
             </View>
           </View>
@@ -172,7 +171,7 @@ const CreatePostScreen: React.FC = () => {
               onChangeText={(t) => t.length <= MAX_CONTENT_LENGTH && setContent(t)}
               placeholder="Write your blog post content here..."
               className="min-h-[180px] px-3 py-3 text-gray-800"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={Colors.textPlaceholder}
               multiline
               textAlignVertical="top"
             />

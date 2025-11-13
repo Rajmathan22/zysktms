@@ -442,7 +442,7 @@ const HomeScreen = () => {
               avatarSize={65}
               avatarWrapperStyle={{ marginRight: 8 }}
               unPressedBorderColor={Colors.primary}
-              pressedBorderColor="#e5e7eb"
+              pressedBorderColor={Colors.primary}
               style={{ padding: 12 }}
               data={data}
               duration={10}
@@ -467,7 +467,7 @@ const HomeScreen = () => {
           onPress={scrollToTop}
           activeOpacity={0.7}
         >
-          <Feather name="arrow-up" size={24} color="white" />
+          <Feather name="arrow-up" size={24} color={Colors.primary} />
         </TouchableOpacity>
       )}
 

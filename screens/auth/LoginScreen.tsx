@@ -12,7 +12,7 @@ import { useAuthContext } from '../../providers/AuthProvider';
 
 GoogleSignin.configure({
   webClientId: '394617112523-oer8g5es7dgmcdg7nsr05tv85nt4517n.apps.googleusercontent.com',
-  forceCodeForRefreshToken: true, // This helps ensure fresh authentication
+  forceCodeForRefreshToken: true, 
 });
 const LoginScreen = () => {
   console.log('LoginScreen rendered');
@@ -66,7 +66,7 @@ const LoginScreen = () => {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            <Ionicons name="checkmark-circle" size={20} color="#4CAF50" style={styles.inputRightIcon} />
+            <Ionicons name="checkmark-circle" size={20} color={Colors.success} style={styles.inputRightIcon} />
           </View>
 
           <Text style={styles.inputLabel}>Password</Text>
@@ -95,13 +95,13 @@ const LoginScreen = () => {
 
           <View style={styles.socialButtonsContainer}>
             <TouchableOpacity style={styles.socialButton} onPress={signInWithGoogle}>
-              <Ionicons name="logo-google" size={24} color="#4285F4" />
+              <Ionicons name="logo-google" size={24} color={Colors.googleIcon} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton} onPress={signInWithGitHub}>
-              <Ionicons name="logo-github" size={24} color="#000" />
+              <Ionicons name="logo-github" size={24} color={Colors.black} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-apple" size={24} color="#000" />
+              <Ionicons name="logo-apple" size={24} color={Colors.appleIcon} />
             </TouchableOpacity>
           </View>
 
@@ -120,7 +120,7 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: Colors.background,
     paddingTop:50
   },
   content: {
@@ -135,12 +135,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: Colors.titleColor,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: Colors.subtitleColor,
   },
   logoSection: {
     alignItems: 'center',
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#FF6B35',
+    backgroundColor: Colors.orangeCircle,
     position: 'absolute',
     top: 15,
     left: 0,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 26,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: '#2E5BBA',
+    borderBottomColor: Colors.blue,
     position: 'absolute',
     top: 4,
     right: 0,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: Colors.logotext,
     letterSpacing: 1,
   },
   formSection: {
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#1A1A1A',
+    color: Colors.logotext,
     marginBottom: 8,
     marginTop: 16,
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 8,
@@ -210,14 +210,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1A1A1A',
+    color: Colors.logotext,
   },
   inputRightIcon: {
     marginLeft: 12,
   },
   showText: {
     fontSize: 14,
-    color: '#FF6B6B',
+    color: Colors.logintext,
     fontWeight: '500',
   },
   errorText: {
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   signInButton: {
-    backgroundColor: '#2E5BBA',
+    backgroundColor: Colors.blue,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     textAlign: 'center',
-    color: '#8E8E93',
+    color: Colors.subtitleColor,
     fontSize: 14,
     marginBottom: 20,
   },
@@ -258,10 +258,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: Colors.border,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: Colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: Colors.subtitleColor,
   },
   signUpLink: {
-    color: '#FF6B35',
+    color: Colors.orangeCircle,
     fontWeight: '500',
   },
 });

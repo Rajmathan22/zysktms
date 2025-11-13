@@ -15,19 +15,7 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const COLORS = {
-  primary: '#5E5CE6', 
-  secondary: '#34C759', 
-  text: '#1C1C1E',
-  textSecondary: '#8A8A8E',
-  backgroundStart: '#F7F7F7',
-  backgroundEnd: '#E9ECF5',
-  white: '#FFFFFF',
-  border: 'rgba(255, 255, 255, 0.4)', 
-  shadow: 'rgba(94, 92, 230, 0.15)', 
-  warning: '#FFD60A',
-};
+import { Colors } from "../../constants/Colors";
 
 const SIZES = {
   padding: 24,
@@ -89,7 +77,7 @@ export default function FeedbackScreen() {
 
   return (
     <LinearGradient
-      colors={[COLORS.backgroundStart, COLORS.backgroundEnd]}
+      colors={[Colors.background, Colors.feedbackBackgroundEnd]} // <-- UPDATED
       style={styles.container}
     >
       <SafeAreaView style={{ flex: 1 }}>
@@ -99,7 +87,7 @@ export default function FeedbackScreen() {
           <Animated.View style={[styles.successHeader, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             
             <View style={styles.successIconContainer}>
-              <Ionicons name="checkmark-circle" size={80} color={COLORS.secondary} />
+              <Ionicons name="checkmark-circle" size={80} color={Colors.feedbackSuccess} /> {/* <-- UPDATED */}
             </View>
             <Text style={styles.successTitle}>Submission Successful!</Text>
             <Text style={styles.successSubtitle}>Thanks for completing the assessment.</Text>
@@ -117,7 +105,7 @@ export default function FeedbackScreen() {
                     <Ionicons
                       name={star <= feedbackData.rating ? "star" : "star-outline"}
                       size={38}
-                      color={star <= feedbackData.rating ? COLORS.warning : COLORS.textSecondary}
+                      color={star <= feedbackData.rating ? Colors.starRating : Colors.subtitleColor} // <-- UPDATED
                     />
                   </Animated.View>
                 </Pressable>
@@ -131,7 +119,7 @@ export default function FeedbackScreen() {
               style={[ styles.commentInput, isCommentFocused && styles.commentInputFocused ]}
               multiline
               placeholder="Any thoughts on how we can improve?"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={Colors.subtitleColor} // <-- UPDATED
               value={feedbackData.comment}
               onChangeText={(text) => setFeedbackData(prev => ({ ...prev, comment: text }))}
               onFocus={() => setIsCommentFocused(true)}
@@ -149,16 +137,16 @@ export default function FeedbackScreen() {
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <ActivityIndicator color={COLORS.white} />
+                <ActivityIndicator color={Colors.white} /> // <-- UPDATED
               ) : (
                 <LinearGradient
-                  colors={['#706CF0', '#5E5CE6']}
+                  colors={[Colors.feedbackPrimaryGradientStart, Colors.feedbackPrimary]} // <-- UPDATED
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.submitButtonGradient}
                 >
                   <Text style={styles.submitButtonText}>Submit Feedback</Text>
-                  <Ionicons name="arrow-forward-outline" size={20} color={COLORS.white} />
+                  <Ionicons name="arrow-forward-outline" size={20} color={Colors.white} /> {/* <-- UPDATED */}
                 </LinearGradient>
               )}
             </Pressable>
@@ -197,24 +185,24 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: COLORS.text,
+    color: Colors.feedbackText, // <-- UPDATED
     textAlign: 'center',
     marginBottom: 8,
   },
   successSubtitle: {
     fontSize: 17,
-    color: COLORS.textSecondary,
+    color: Colors.subtitleColor, // <-- UPDATED
     textAlign: "center",
   },
   
   feedbackCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+    backgroundColor: Colors.cardBackground, // <-- UPDATED
     borderRadius: SIZES.radius,
     padding: SIZES.padding,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.shadow,
+    borderColor: Colors.cardBorder, // <-- UPDATED
+    shadowColor: Colors.feedbackShadow, // <-- UPDATED
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 1,
     shadowRadius: 30,
@@ -227,7 +215,7 @@ const styles = StyleSheet.create({
   feedbackTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: COLORS.text,
+    color: Colors.feedbackText, // <-- UPDATED
   },
   
   starsContainer: {
@@ -239,27 +227,27 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 16,
     fontWeight: "500",
-    color: COLORS.textSecondary,
+    color: Colors.subtitleColor, // <-- UPDATED
     textAlign: "center",
     marginBottom: 24,
     height: 22, 
   },
   
   commentInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: Colors.commentInputBackground, // <-- UPDATED
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: COLORS.text,
+    color: Colors.feedbackText, // <-- UPDATED
     minHeight: 100,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: Colors.transparent, // <-- UPDATED
   },
   commentInputFocused: {
-    borderColor: 'rgba(94, 92, 230, 0.5)',
-    backgroundColor: COLORS.white,
+    borderColor: Colors.feedbackInputBorderFocused, // <-- UPDATED
+    backgroundColor: Colors.white, // <-- UPDATED
   },
   
   actionButtonsContainer: {
@@ -268,7 +256,7 @@ const styles = StyleSheet.create({
   submitButton: {
     width: '100%',
     borderRadius: 18,
-    shadowColor: COLORS.primary,
+    shadowColor: Colors.feedbackPrimary, // <-- UPDATED
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 15,
@@ -287,12 +275,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   submitButtonText: {
-    color: COLORS.white,
+    color: Colors.white, // <-- UPDATED
     fontSize: 17,
     fontWeight: "600",
   },
   skipButtonText: {
-    color: COLORS.textSecondary,
+    color: Colors.subtitleColor, // <-- UPDATED
     fontSize: 15,
     fontWeight: "500",
   },

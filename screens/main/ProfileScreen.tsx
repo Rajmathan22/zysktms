@@ -73,8 +73,8 @@ const ProfileScreen = () => {
         <View style={styles.logoutCard}>
           <TouchableOpacity activeOpacity={0.7} style={styles.logoutRow} onPress={logout}>
             <View style={styles.optionLeft}>
-              <View style={[styles.optionIconWrap, { backgroundColor: 'rgba(235, 87, 87, 0.12)' }]}>
-                <Ionicons name="log-out-outline" size={20} color={Colors.error || '#EB5757'} />
+              <View style={[styles.optionIconWrap, { backgroundColor: Colors.logoutcolor }]}>
+                <Ionicons name="log-out-outline" size={20} color={Colors.logouttextcolor} />
               </View>
               <Text style={styles.logoutText}>Log out</Text>
             </View>
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 8,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: 'rgba(75, 123, 236, 0.12)',
+    backgroundColor: Colors.profilesection,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 4,
     marginBottom: 30,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
-    color: Colors.error || '#EB5757',
+    color: Colors.error || Colors.logouttextcolor,
     marginLeft: 12,
     fontFamily: 'Nunito-Bold',
   },
