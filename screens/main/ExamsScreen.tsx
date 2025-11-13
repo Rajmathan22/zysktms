@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import ExamCard from '../../components/common/ExamCard';
+import LottieLoader from '../../components/common/LottieLoader';
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import { Colors } from '../../constants/Colors';
 import { ExamItem, ExamStatus, fetchExams } from '../../services/exams';
@@ -44,60 +45,69 @@ const ExamsScreen = () => {
       onNotificationPress={handleNotificationPress}
       hasNotifications={false}
     >
-      <FlatList
-        data={filtered}
-        keyExtractor={(i) => i.id}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <>
-            <View style={styles.header}>
-              <Text style={styles.subtitle}>Prepare and take your professional exams</Text>
-              <View style={styles.filterRow}>
-                {(
-                  [
-                    { k: 'all', label: 'All' },
-                    { k: 'upcoming', label: 'Upcoming' },
-                    { k: 'completed', label: 'Completed' },
-                    
-                  ] as const
-                ).map((f) => (
-                  <Pressable
-                    key={f.k}
-                    onPress={() => setFilter(f.k as any)}
-                    style={[
-                      styles.chip,
-                      filter === f.k && styles.chipActive,
-                    ]}
-                  >
-                    <Text style={[styles.chipText, filter === f.k && styles.chipTextActive]}>{f.label}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
+      <LottieLoader visible={isLoading} />
 
-            <View style={styles.statsContainer}>
-              <View style={styles.statCard}>
-                <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
-                <Text style={styles.statNumber}>{stats.completed}</Text>
-                <Text style={styles.statLabel}>Completed</Text>
+      {isError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>
+            {error?.message || 'Failed to load exams.'}
+          </Text>
+        </View>
+      )}
+
+      {!isError && (
+        <FlatList
+          data={filtered}
+          keyExtractor={(i) => i.id}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <>
+              <View style={styles.header}>
+                <Text style={styles.subtitle}>Prepare and take your professional exams</Text>
+                <View style={styles.filterRow}>
+                  {(
+                    [
+                      { k: 'all', label: 'All' },
+                      { k: 'upcoming', label: 'Upcoming' },
+                      { k: 'completed', label: 'Completed' },
+                      
+                    ] as const
+                  ).map((f) => (
+                    <Pressable
+                      key={f.k}
+                      onPress={() => setFilter(f.k as any)}
+                      style={[
+                        styles.chip,
+                        filter === f.k && styles.chipActive,
+                      ]}
+                    >
+                      <Text style={[styles.chipText, filter === f.k && styles.chipTextActive]}>{f.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
-              <View style={styles.statCard}>
-                <Ionicons name="time-outline" size={24} color="#FF9800" />
-                <Text style={styles.statNumber}>{stats.upcoming}</Text>
-                <Text style={styles.statLabel}>Upcoming</Text>
+
+              <View style={styles.statsContainer}>
+                <View style={styles.statCard}>
+                  <Ionicons name="checkmark-circle-outline" size={24} color="#4CAF50" />
+                  <Text style={styles.statNumber}>{stats.completed}</Text>
+                  <Text style={styles.statLabel}>Completed</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Ionicons name="time-outline" size={24} color="#FF9800" />
+                  <Text style={styles.statNumber}>{stats.upcoming}</Text>
+                  <Text style={styles.statLabel}>Upcoming</Text>
+                </View>
               </View>
-            </View>
-            {isLoading && (
-              <View style={styles.loadingWrap}>
-                <ActivityIndicator color={Colors.primary} />
-              </View>
-            )}
-          </>
-        }
-        renderItem={({ item }) => (
-          <ExamCard item={item} onPrimary={handlePrimary} />
-        )}
-      />
+              
+              
+            </>
+          }
+          renderItem={({ item }) => (
+            <ExamCard item={item} onPrimary={handlePrimary} />
+          )}
+        />
+      )}
     </ScreenContainer>
   );
 };
@@ -179,9 +189,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
-  loadingWrap: {
+  loadingWrap: { 
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: Colors.error, 
+    fontSize: 16,
+    textAlign: 'center',
+    fontFamily: 'Nunito-Regular',
   },
 });
 
